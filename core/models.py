@@ -231,6 +231,7 @@ class Payment(models.Model):
         ("mpesa", "M-Pesa"),
         ("tigopesa", "Tigo Pesa"),
         ("airtelmoney", "Airtel Money"),
+        ("card", "Card"),
     ]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.OneToOneField(

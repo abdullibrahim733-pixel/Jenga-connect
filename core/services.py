@@ -42,6 +42,14 @@ def latest_commission_per_unit(product) -> Decimal:
     return commission_setting.commission_per_unit if commission_setting else Decimal("0")
 
 
+def commission_with_platform_fee(product) -> Decimal:
+    base_commission = latest_commission_per_unit(product)
+    platform_fee = (product.hardware_price_per_unit * Decimal("0.02")).quantize(
+        Decimal("0.01")
+    )
+    return base_commission + platform_fee
+
+
 def create_order_with_items(*, fundi, delivery_area, delivery_address_note, items):
     """
     items: list of dicts -> {"product": Product, "quantity": int}
@@ -59,7 +67,7 @@ def create_order_with_items(*, fundi, delivery_area, delivery_address_note, item
         quantity = item["quantity"]
         if product.store_id != store.id:
             raise ValueError("All items must belong to the same hardware store.")
-        comm_per_unit = latest_commission_per_unit(product)
+        comm_per_unit = commission_with_platform_fee(product)
         hw_price = product.hardware_price_per_unit
         final_price = hw_price + comm_per_unit
 

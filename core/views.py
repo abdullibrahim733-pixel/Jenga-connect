@@ -17,11 +17,12 @@ from .models import (
     OrderItem,
     Payment,
     normalize_product_name,
+    Notification,
 )
 from .services import (
     normalize_phone_number,
     parse_positive_decimal,
-    latest_commission_per_unit,
+    commission_with_platform_fee,
 )
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ def checkout(request):
 
     product = get_object_or_404(Product, id=product_id, active=True)
 
-    commission_per_unit = latest_commission_per_unit(product)
+    commission_per_unit = commission_with_platform_fee(product)
     hardware_price = product.hardware_price_per_unit
     final_price = hardware_price + commission_per_unit
 
@@ -105,6 +106,14 @@ def checkout(request):
             final_price_per_unit=final_price,
         )
 
+        Notification.objects.create(
+            user=product.store.owner,
+            type="ORDER_CREATED",
+            title="New Order Received",
+            message=f"You have a new order #{order.short_id} from {profile.full_name}",
+            order=order,
+        )
+
     return redirect("initiate_payment", order_id=order.id)
 
 
@@ -121,7 +130,7 @@ def initiate_payment(request, order_id):
             messages.error(request, "Invalid payment method selected.")
             return redirect("initiate_payment", order_id=order.id)
 
-        if not phone:
+        if method != "card" and not phone:
             messages.error(
                 request, "Enter a valid phone number (e.g. 07XXXXXXXX or 255XXXXXXXXX)."
             )
@@ -136,15 +145,19 @@ def initiate_payment(request, order_id):
             messages.info(request, "This order has already been paid.")
             return redirect("dashboard")
 
+        payment_defaults = {
+            "method": method,
+            "phone_number": phone,
+            "amount": order.grand_total,
+            "status": "initiated",
+            "transaction_id": None,
+        }
+        if method == "card":
+            payment_defaults["phone_number"] = "255000000000"
+
         payment, _ = Payment.objects.update_or_create(
             order=order,
-            defaults={
-                "method": method,
-                "phone_number": phone,
-                "amount": order.grand_total,
-                "status": "initiated",
-                "transaction_id": None,
-            },
+            defaults=payment_defaults,
         )
 
         if order.payment_status != "paid":

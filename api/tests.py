@@ -62,7 +62,7 @@ def test_place_order_creates_order_and_items():
 
     assert response.status_code == 201
     order = Order.objects.get(id=response.data["id"])
-    assert order.grand_total == Decimal("30000")
+    assert order.grand_total == Decimal("30600")
     assert order.items.count() == 1
 
 

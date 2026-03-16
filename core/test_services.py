@@ -95,8 +95,8 @@ def test_create_order_with_items_calculates_totals():
 
     order.refresh_from_db()
     assert order.subtotal_hardware == Decimal("30000")
-    assert order.commission_total == Decimal("2000")
-    assert order.grand_total == Decimal("32000")
+    assert order.commission_total == Decimal("2600")
+    assert order.grand_total == Decimal("32600")
     assert order.items.count() == 1
 
 
