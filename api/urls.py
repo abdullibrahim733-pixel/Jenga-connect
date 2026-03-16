@@ -7,7 +7,7 @@ from .views import (
     OrderViewSet,
     NotificationViewSet,
 )
-from .views import health_check
+from .views import health_check, payment_webhook
 
 router = DefaultRouter()
 router.register("profiles", ProfileViewSet, basename="profile")
@@ -18,5 +18,6 @@ router.register("notifications", NotificationViewSet, basename="notification")
 
 urlpatterns = [
     path("health/", health_check, name="health_check"),
+    path("payments/webhook/", payment_webhook, name="payment_webhook"),
     path("", include(router.urls)),
 ]

@@ -7,6 +7,7 @@ import logging
 from decimal import Decimal
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Sum, Count
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_GET, require_POST
 from .models import (
@@ -24,6 +25,7 @@ from .services import (
     parse_positive_decimal,
     commission_with_platform_fee,
 )
+from .payments import initiate_payment as gateway_initiate_payment
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +161,12 @@ def initiate_payment(request, order_id):
             order=order,
             defaults=payment_defaults,
         )
+
+        try:
+            payment.raw_response = gateway_initiate_payment(payment)
+            payment.save(update_fields=["raw_response"])
+        except Exception:
+            logger.exception("Failed to initiate payment gateway for %s", payment.id)
 
         if order.payment_status != "paid":
             order.payment_status = "processing"
@@ -345,7 +353,7 @@ def dashboard(request):
             },
         )
     else:
-        return redirect("manage_page")
+        return redirect("admin_dashboard")
 
 
 @login_required
@@ -646,6 +654,112 @@ def manage_page(request):
         .order_by("-created_at"),
     }
     return render(request, "dashboard/manage.html", context)
+
+
+@login_required
+def admin_dashboard(request):
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        return redirect("home")
+
+    if profile.role != "admin":
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "add_user":
+            phone = normalize_phone_number(request.POST.get("phone"))
+            full_name = (request.POST.get("full_name") or "").strip()
+            area = (request.POST.get("area") or "").strip()
+            role = (request.POST.get("role") or "fundi").strip()
+            password = request.POST.get("password")
+            store_name = (request.POST.get("store_name") or "").strip()
+
+            if not all([phone, full_name, area, password]):
+                messages.error(request, "All fields are required.")
+                return redirect("admin_dashboard")
+
+            user = User.objects.filter(username=phone).first()
+            if not user:
+                user = User.objects.create_user(username=phone, password=password)
+            new_profile, _ = Profile.objects.get_or_create(
+                user=user,
+                defaults={
+                    "phone": phone,
+                    "full_name": full_name,
+                    "role": role,
+                    "area": area,
+                },
+            )
+            if new_profile.full_name != full_name or new_profile.role != role:
+                new_profile.full_name = full_name
+                new_profile.role = role
+                new_profile.area = area
+                new_profile.save(update_fields=["full_name", "role", "area"])
+
+            if role == "hardware" and store_name:
+                HardwareStore.objects.get_or_create(
+                    owner=new_profile, defaults={"name": store_name, "area": area}
+                )
+
+        elif action == "update_user":
+            profile_id = request.POST.get("profile_id")
+            role = (request.POST.get("role") or "").strip()
+            full_name = (request.POST.get("full_name") or "").strip()
+            area = (request.POST.get("area") or "").strip()
+            is_active = request.POST.get("is_active") == "on"
+
+            target_profile = get_object_or_404(Profile, id=profile_id)
+            target_profile.full_name = full_name or target_profile.full_name
+            if role:
+                target_profile.role = role
+            if area:
+                target_profile.area = area
+            target_profile.save(update_fields=["full_name", "role", "area"])
+
+            target_profile.user.is_active = is_active
+            target_profile.user.save(update_fields=["is_active"])
+
+        elif action == "delete_user":
+            profile_id = request.POST.get("profile_id")
+            target_profile = get_object_or_404(Profile, id=profile_id)
+            target_profile.user.delete()
+
+        elif action == "toggle_store":
+            store_id = request.POST.get("store_id")
+            store = get_object_or_404(HardwareStore, id=store_id)
+            store.active = request.POST.get("active") == "on"
+            store.save(update_fields=["active"])
+
+        return redirect("admin_dashboard")
+
+    totals = Order.objects.aggregate(
+        total_commission=Sum("commission_total"),
+        total_revenue=Sum("grand_total"),
+    )
+    payment_summary = (
+        Payment.objects.values("status")
+        .annotate(count=Count("id"), amount=Sum("amount"))
+        .order_by("status")
+    )
+
+    users = Profile.objects.select_related("user").order_by("-created_at")
+    stores = HardwareStore.objects.select_related("owner").order_by("-created_at")
+    recent_orders = Order.objects.select_related("store", "fundi").order_by(
+        "-created_at"
+    )[:10]
+
+    context = {
+        "profile": profile,
+        "totals": totals,
+        "payment_summary": payment_summary,
+        "users": users,
+        "stores": stores,
+        "recent_orders": recent_orders,
+    }
+    return render(request, "dashboard/admin_dashboard.html", context)
 
 
 def map_view(request):

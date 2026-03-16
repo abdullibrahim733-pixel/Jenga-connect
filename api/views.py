@@ -16,6 +16,7 @@ from core.models import (
     Product,
     Order,
     Notification,
+    Payment,
 )
 from .serializers import (
     ProfileSerializer,
@@ -27,6 +28,7 @@ from .serializers import (
 )
 import math
 from core.services import create_order_with_items
+from core.payments import get_gateway
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +58,48 @@ def health_check(request):
 
     status_code = 200 if health["status"] == "healthy" else 503
     return Response(health, status=status_code)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def payment_webhook(request):
+    raw_body = request.body
+    payload = request.data or {}
+    signature = request.headers.get("X-Payment-Signature", "")
+    gateway = get_gateway(payload.get("method", ""))
+    if not gateway.verify_webhook(raw_body, signature):
+        return Response({"detail": "Invalid signature."}, status=status.HTTP_400_BAD_REQUEST)
+
+    payment_id = payload.get("payment_id")
+    transaction_id = payload.get("transaction_id")
+    status_value = payload.get("status")
+
+    payment = None
+    if payment_id:
+        payment = Payment.objects.filter(id=payment_id).first()
+    if not payment and transaction_id:
+        payment = Payment.objects.filter(transaction_id=transaction_id).first()
+
+    if not payment:
+        return Response({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if transaction_id and not payment.transaction_id:
+        payment.transaction_id = transaction_id
+
+    if status_value in {"completed", "failed"}:
+        payment.status = status_value
+        payment.raw_response = payload
+        payment.save(update_fields=["status", "transaction_id", "raw_response", "updated_at"])
+
+        order = payment.order
+        if status_value == "completed":
+            order.payment_status = "paid"
+            order.status = "confirmed"
+        else:
+            order.payment_status = "failed"
+        order.save(update_fields=["payment_status", "status"])
+
+    return Response({"status": "ok"})
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
