@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+
+# Env
+.env
+
+# Django
+*.sqlite3
+media/
+staticfiles/
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+dist_package/
+*.spec
+*.zip
+
+# OS
+.DS_Store
