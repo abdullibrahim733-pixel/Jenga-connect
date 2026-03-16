@@ -127,3 +127,28 @@ This guide covers deploying the Django backend to **Render** with PostgreSQL, ca
 - [ ] HTTPS enabled (automatic on Render)
 - [ ] Custom domain with SSL
 - [ ] Admin URL changed from `/admin/`
+
+## Vercel Deployment
+
+Vercel runs Django as a Python Serverless Function. This repo includes:
+
+- `vercel_app.py` as the entry point.
+- `vercel.json` routes all traffic to the Django app.
+
+Required settings in Vercel:
+
+- `DJANGO_SECRET_KEY`
+- `DJANGO_ALLOWED_HOSTS` (comma-separated, include your Vercel domain)
+- `DATABASE_URL` (use Postgres or another external DB)
+- `DJANGO_DEBUG` set to `False`
+
+Recommended build command (Project Settings → Build & Development):
+
+```
+python manage.py collectstatic --noinput
+```
+
+Notes:
+
+- Run migrations from a separate environment (local or CI). Vercel serverless does not run `migrate`.
+- Use external media storage (S3, etc.) for user uploads.
