@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from decouple import config, Csv
 import dj_database_url
@@ -267,7 +268,13 @@ LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/"
 
-# Cache Configuration (Redis for production, local memory for dev)
+IS_TESTING = (
+    "pytest" in sys.modules
+    or os.getenv("PYTEST_CURRENT_TEST") is not None
+    or _env_bool("DJANGO_TESTING", False)
+)
+
+# Cache Configuration (Redis for production, local memory for dev/tests)
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
@@ -280,8 +287,8 @@ CACHES = {
     }
 }
 
-# Use local memory cache if Redis is not available (development fallback)
-if os.getenv("USE_LOCAL_CACHE", "false").lower() == "true":
+# Use local memory cache if Redis is not available (development/tests fallback)
+if IS_TESTING or os.getenv("USE_LOCAL_CACHE", "false").lower() == "true":
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

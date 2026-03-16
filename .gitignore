@@ -5,6 +5,8 @@ __pycache__/
 *.pyd
 *.egg-info/
 *.egg
+.venv/
+.coverage
 
 # Env
 .env

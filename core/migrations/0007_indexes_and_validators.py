@@ -68,74 +68,77 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="profile",
-            index=models.Index(fields=["role"]),
+            index=models.Index(fields=["role"], name="core_profil_role_idx"),
         ),
         migrations.AddIndex(
             model_name="profile",
-            index=models.Index(fields=["area"]),
+            index=models.Index(fields=["area"], name="core_profil_area_idx"),
         ),
         migrations.AddIndex(
             model_name="hardwarestore",
             index=models.Index(
-                fields=["active", "area"]
+                fields=["active", "area"], name="core_hardw_active_area_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="hardwarestore",
             index=models.Index(
-                fields=["owner", "active"]
+                fields=["owner", "active"], name="core_hardw_owner_active_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="product",
             index=models.Index(
-                fields=["active", "category"]
+                fields=["active", "category"], name="core_produ_active_category_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="product",
             index=models.Index(
-                fields=["store", "active"]
+                fields=["store", "active"], name="core_produ_store_active_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="order",
             index=models.Index(
                 fields=["status", "payment_status"],
+                name="core_order_status_payment_idx",
             ),
         ),
         migrations.AddIndex(
             model_name="order",
             index=models.Index(
                 fields=["store", "created_at"],
+                name="core_order_store_created_idx",
             ),
         ),
         migrations.AddIndex(
             model_name="order",
             index=models.Index(
                 fields=["fundi", "created_at"],
+                name="core_order_fundi_created_idx",
             ),
         ),
         migrations.AddIndex(
             model_name="orderitem",
-            index=models.Index(fields=["order"]),
+            index=models.Index(fields=["order"], name="core_orderi_order_idx"),
         ),
         migrations.AddIndex(
             model_name="orderitem",
             index=models.Index(
-                fields=["product"]
+                fields=["product"], name="core_orderi_product_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="payment",
             index=models.Index(
-                fields=["status", "method"]
+                fields=["status", "method"], name="core_payme_status_method_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="notification",
             index=models.Index(
-                fields=["user", "is_read"]
+                fields=["user", "is_read"], name="core_notif_user_read_idx"
             ),
         ),
     ]

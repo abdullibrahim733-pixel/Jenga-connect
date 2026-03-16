@@ -502,7 +502,7 @@ def manage_page(request):
         action = request.POST.get("action")
 
         if action == "add_hardware" and profile.role == "admin":
-    phone = normalize_phone_number(request.POST.get("phone"))
+            phone = normalize_phone_number(request.POST.get("phone"))
             full_name = (request.POST.get("full_name") or "").strip()
             store_name = (request.POST.get("store_name") or "").strip()
             area = (request.POST.get("area") or "").strip()
