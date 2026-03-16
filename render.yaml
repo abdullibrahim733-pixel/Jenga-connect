@@ -2,6 +2,7 @@ services:
   - type: web
     name: jenga-connect-api
     env: python
+    pythonVersion: "3.11.9"
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     releaseCommand: python manage.py migrate && python manage.py bootstrap_admin
     startCommand: gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
