@@ -152,3 +152,18 @@ Notes:
 
 - Run migrations from a separate environment (local or CI). Vercel serverless does not run `migrate`.
 - Use external media storage (S3, etc.) for user uploads.
+
+## CI/CD (GitHub Actions)
+
+This repo includes two workflows:
+
+- `CI` runs checks/tests on every push and PR.
+- `Migrate Database` runs Django migrations on every push to `main`.
+
+Required GitHub Secrets:
+
+- `DATABASE_URL`
+- `DJANGO_SECRET_KEY`
+- `DJANGO_ALLOWED_HOSTS`
+
+If secrets are not set, migrations are skipped.
