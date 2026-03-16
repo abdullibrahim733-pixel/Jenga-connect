@@ -7,6 +7,8 @@ services:
     releaseCommand: python manage.py migrate && python manage.py bootstrap_admin
     startCommand: gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
+      - key: DATABASE_URL
+        fromDatabase: jenga_connect_db
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
