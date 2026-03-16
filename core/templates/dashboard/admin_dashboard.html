@@ -15,18 +15,18 @@
     </div>
 
     <div style="display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 2rem;">
-        <div style="background: white; border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color);">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color);">
             <div style="color: var(--text-muted); font-size: 0.9rem;">Total Commission</div>
             <div style="font-size: 1.5rem; font-weight: 800;">TZS {{ totals.total_commission|default:"0" }}</div>
         </div>
-        <div style="background: white; border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color);">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); padding: 1.5rem; border: 1px solid var(--border-color);">
             <div style="color: var(--text-muted); font-size: 0.9rem;">Total Revenue</div>
             <div style="font-size: 1.5rem; font-weight: 800;">TZS {{ totals.total_revenue|default:"0" }}</div>
         </div>
     </div>
 
     <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-        <div style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
             <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Payment Status</h2>
             {% if payment_summary %}
             <ul style="list-style: none; padding: 0; margin: 0;">
@@ -42,7 +42,7 @@
             {% endif %}
         </div>
 
-        <div style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
             <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Recent Orders</h2>
             {% if recent_orders %}
             <ul style="list-style: none; padding: 0; margin: 0;">
@@ -60,7 +60,7 @@
     </div>
 
     <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-top: 2rem;">
-        <div style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
             <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Add User</h2>
             <form method="POST">
                 {% csrf_token %}
@@ -79,7 +79,7 @@
             </form>
         </div>
 
-        <div style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
+        <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
             <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Users</h2>
             {% if users %}
             <div style="max-height: 360px; overflow: auto;">
@@ -115,7 +115,7 @@
         </div>
     </div>
 
-    <div style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 2rem;">
+    <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; margin-top: 2rem;">
         <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Hardware Stores</h2>
         {% if stores %}
         <div style="max-height: 320px; overflow: auto;">

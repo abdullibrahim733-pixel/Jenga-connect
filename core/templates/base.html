@@ -61,7 +61,7 @@
     {% if messages %}
     <div class="container" style="padding-top: 1rem;">
         {% for message in messages %}
-        <div style="margin-bottom: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: #fff;">
+        <div style="margin-bottom: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px);">
             {{ message }}
         </div>
         {% endfor %}
