@@ -62,7 +62,7 @@ class CheckoutFlowTests(TestCase):
         expected_url = reverse('initiate_payment', kwargs={'order_id': order.id})
         self.assertRedirects(response, expected_url)
 
-    def test_initiate_payment_url_reverses_with_integer_order_id(self):
+    def test_initiate_payment_url_reverses_with_uuid_order_id(self):
         order = Order.objects.create(
             fundi=self.fundi_profile,
             store=self.store,

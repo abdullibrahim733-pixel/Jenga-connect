@@ -11,7 +11,7 @@ urlpatterns = [
     path("dashboard/admin/", views.admin_dashboard, name="admin_dashboard"),
     path("hardware/add-product/", views.add_product, name="add_product"),
     path(
-        "hardware/order/<int:order_id>/<str:action>/",
+        "hardware/order/<uuid:order_id>/<str:action>/",
         views.manage_order,
         name="manage_order",
     ),
@@ -23,7 +23,7 @@ urlpatterns = [
     path("manage/", views.manage_page, name="manage_page"),
     path("checkout/", views.checkout, name="checkout"),
     path(
-        "payment/initiate/<int:order_id>/",
+        "payment/initiate/<uuid:order_id>/",
         views.initiate_payment,
         name="initiate_payment",
     ),

@@ -176,7 +176,7 @@ class Order(models.Model):
         ("paid", "Paid"),
         ("failed", "Failed"),
     ]
-    id = models.AutoField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     fundi = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="orders")
     store = models.ForeignKey(
         HardwareStore, on_delete=models.CASCADE, related_name="received_orders"
@@ -197,7 +197,7 @@ class Order(models.Model):
 
     @property
     def short_id(self):
-        return f"TXD{self.id:03d}"
+        return f"TXD{self.id.hex[:6].upper()}"
 
     class Meta:
         indexes = [
