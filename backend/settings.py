@@ -151,7 +151,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(os.getenv("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Security and deployment toggles
 SESSION_COOKIE_SECURE = not DEBUG
