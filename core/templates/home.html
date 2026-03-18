@@ -8,7 +8,7 @@
     <div
         style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); padding: 10px 0; margin-bottom: 2rem; position: relative;">
         <div
-            style="display: flex; gap: 2rem; overflow-x: auto; white-space: nowrap; font-weight: 500; font-size: 0.9rem;">
+            style="display: flex; gap: 2rem; overflow-x: auto; white-space: nowrap; font-weight: 500; font-size: 0.9rem; align-items: center;">
             <a href="#"
                 style="color: var(--primary); text-decoration: none; padding-bottom: 5px; border-bottom: 2px solid var(--primary);">All</a>
             <a href="?category=cement" style="color: var(--text-main); text-decoration: none;">Cement</a>
@@ -16,36 +16,16 @@
             <a href="?category=iron_rods" style="color: var(--text-main); text-decoration: none;">Iron Rods</a>
             <a href="?category=plaster" style="color: var(--text-main); text-decoration: none;">Plaster</a>
             <a href="?category=paint_colour" style="color: var(--text-main); text-decoration: none;">Paint & Colour</a>
+            <a href="{% url 'hardware_shops' %}" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 0.9rem;">Stores</a>
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="font-size: 1.5rem; margin: 0; font-weight: 800; color: var(--text-main);">Nearby Hardware Stores</h2>
-        <a href="{% url 'map_view' %}" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 1rem;">View Map</a>
-    </div>
-    <div
-        style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 2rem; scroll-snap-type: x mandatory;">
-        <!-- Tracking Near Hardwares feature -->
-        {% for store in hardware_stores %}
-        <div
-            style="min-width: 250px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); scroll-snap-align: start;">
-            <div style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem;">
-                <div
-                    style="width: 48px; height: 48px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary);">
-                    <i data-lucide="map-pin"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">{{ store.name }}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ store.area }}</div>
-                </div>
-            </div>
-            <div style="font-size: 0.85rem; color: #28a745; font-weight: 600;">
-                ★ Faster deliveries: ~{{ store.delivery_capacity_units_per_day }} units/day
-            </div>
+    <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+        <div>
+            <h2 style="font-size: 1.5rem; margin: 0; font-weight: 800; color: var(--text-main);">Browse Hardware Stores</h2>
+            <p style="color: var(--text-muted); margin: 0.5rem 0 0;">See every store and shop all products together.</p>
         </div>
-        {% empty %}
-        <div style="color: var(--text-muted); font-size: 0.9rem;">No hardware stores found nearby.</div>
-        {% endfor %}
+        <a href="{% url 'hardware_shops' %}" class="btn btn-primary">View All Stores</a>
     </div>
 
     <h2 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 800;">Top Picks for You</h2>

@@ -95,11 +95,7 @@ def home(request):
         ).select_related("store")
     else:
         products = Product.objects.filter(active=True).select_related("store")
-
-    hardware_stores = HardwareStore.objects.filter(active=True)[:5]
-
-    context = {"products": products, "hardware_stores": hardware_stores}
-    return render(request, "home.html", context)
+    return render(request, "home.html", {"products": products})
 
 
 def hardware_shops(request):
