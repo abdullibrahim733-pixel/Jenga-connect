@@ -49,6 +49,7 @@
             </div>
 
             <div class="user-actions">
+                <button id="theme-toggle" class="btn btn-outline" type="button">Light Mode</button>
                 <a href="{% url 'hardware_shops' %}" class="btn btn-outline">Hardware Shops</a>
                 {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}" class="btn btn-outline">Dashboard</a>
@@ -98,6 +99,25 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
+        const themeToggle = document.getElementById("theme-toggle");
+        const storedTheme = localStorage.getItem("theme");
+        const preferredTheme = storedTheme || "dark";
+        document.documentElement.setAttribute("data-theme", preferredTheme);
+
+        function syncThemeLabel() {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+            themeToggle.textContent = currentTheme === "dark" ? "Light Mode" : "Dark Mode";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+            const nextTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", nextTheme);
+            localStorage.setItem("theme", nextTheme);
+            syncThemeLabel();
+        });
+
+        syncThemeLabel();
         lucide.createIcons();
     </script>
     {% block extra_js %}{% endblock %}
