@@ -7,9 +7,10 @@ import logging
 from decimal import Decimal
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Prefetch
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_GET, require_POST
+from django.utils import timezone
 from .models import (
     Product,
     Profile,
@@ -29,6 +30,63 @@ from .payments import initiate_payment as gateway_initiate_payment
 
 logger = logging.getLogger(__name__)
 
+
+def _build_sales_snapshot(stores):
+    store_list = list(stores)
+    if not store_list:
+        return []
+
+    store_ids = [store.id for store in store_list]
+    unit_labels = dict(Product.UNIT_CHOICES)
+
+    totals_rows = (
+        Order.objects.filter(payment_status="paid", store_id__in=store_ids)
+        .values("store_id")
+        .annotate(total_sales=Sum("grand_total"), order_count=Count("id"))
+    )
+    totals_by_store = {row["store_id"]: row for row in totals_rows}
+
+    items_rows = (
+        OrderItem.objects.filter(
+            order__payment_status="paid", order__store_id__in=store_ids
+        )
+        .values("order__store_id", "product__name", "product__unit")
+        .annotate(total_units=Sum("quantity_units"))
+        .order_by("-total_units", "product__name")
+    )
+
+    items_by_store = {}
+    for row in items_rows:
+        store_id = row["order__store_id"]
+        items_by_store.setdefault(store_id, []).append(
+            {
+                "name": row["product__name"],
+                "unit": unit_labels.get(row["product__unit"], row["product__unit"]),
+                "units": int(row["total_units"] or 0),
+            }
+        )
+
+    snapshot = []
+    for store in store_list:
+        totals = totals_by_store.get(store.id, {})
+        total_sales = totals.get("total_sales") or Decimal("0")
+        order_count = totals.get("order_count") or 0
+        items = items_by_store.get(store.id, [])
+        items_sold = sum(item["units"] for item in items)
+        snapshot.append(
+            {
+                "id": str(store.id),
+                "name": store.name,
+                "area": store.area,
+                "total_sales": str(total_sales),
+                "order_count": int(order_count),
+                "items_sold": int(items_sold),
+                "top_items": items[:5],
+            }
+        )
+
+    return snapshot
+
 def home(request):
     category = request.GET.get("category")
     if category:
@@ -42,6 +100,16 @@ def home(request):
 
     context = {"products": products, "hardware_stores": hardware_stores}
     return render(request, "home.html", context)
+
+
+def hardware_shops(request):
+    stores = HardwareStore.objects.filter(active=True).prefetch_related(
+        Prefetch(
+            "products",
+            queryset=Product.objects.filter(active=True).select_related("store"),
+        )
+    )
+    return render(request, "hardware_shops.html", {"stores": stores})
 
 
 def product_detail(request, pk):
@@ -342,6 +410,7 @@ def dashboard(request):
             .select_related("fundi")
             .order_by("-created_at")
         )
+        sales_snapshot = _build_sales_snapshot([store])
         return render(
             request,
             "dashboard/hardware.html",
@@ -350,6 +419,7 @@ def dashboard(request):
                 "store": store,
                 "products": products,
                 "orders": orders,
+                "sales_snapshot": sales_snapshot[0] if sales_snapshot else None,
             },
         )
     else:
@@ -750,6 +820,7 @@ def admin_dashboard(request):
     recent_orders = Order.objects.select_related("store", "fundi").order_by(
         "-created_at"
     )[:10]
+    sales_snapshot = _build_sales_snapshot(stores)
 
     context = {
         "profile": profile,
@@ -758,8 +829,33 @@ def admin_dashboard(request):
         "users": users,
         "stores": stores,
         "recent_orders": recent_orders,
+        "sales_snapshot": sales_snapshot,
     }
     return render(request, "dashboard/admin_dashboard.html", context)
+
+
+@login_required
+@require_GET
+def sales_metrics(request):
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        return JsonResponse({"detail": "Profile not found."}, status=404)
+
+    if profile.role == "admin":
+        stores = HardwareStore.objects.select_related("owner").order_by("name")
+    elif profile.role == "hardware":
+        stores = HardwareStore.objects.filter(owner=profile).select_related("owner")
+    else:
+        return JsonResponse({"detail": "Forbidden."}, status=403)
+
+    snapshot = _build_sales_snapshot(stores)
+    return JsonResponse(
+        {
+            "generated_at": timezone.now().isoformat(),
+            "stores": snapshot,
+        }
+    )
 
 
 def map_view(request):

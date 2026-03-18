@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Jenga Connect - Hardware Shops{% endblock %}
+
+{% block content %}
+<div class="container animate-fade-in" style="padding: 2rem 0;">
+    <div class="shop-hero">
+        <div>
+            <h1 class="shop-hero-title">Hardware Shops</h1>
+            <p class="shop-hero-subtitle">Explore every store in the marketplace and shop their products in one place.</p>
+        </div>
+        <a href="{% url 'map_view' %}" class="btn btn-outline">View Map</a>
+    </div>
+
+    {% if stores %}
+    <div class="shop-directory">
+        {% for store in stores %}
+        <section class="shop-card">
+            <div class="shop-banner">
+                <div class="shop-banner-main">
+                    <div class="shop-badge">Open Store</div>
+                    <h2 class="shop-title">{{ store.name }}</h2>
+                    <div class="shop-meta">{{ store.area }}{% if store.address %} • {{ store.address }}{% endif %}</div>
+                </div>
+                <div class="shop-stat">
+                    <div class="shop-stat-value">{{ store.products.all|length }}</div>
+                    <div class="shop-stat-label">Products</div>
+                </div>
+            </div>
+            <div class="shop-products">
+                {% for product in store.products.all %}
+                <article class="shop-product-card">
+                    <div class="shop-product-category">{{ product.get_category_display }}</div>
+                    <div class="shop-product-name">{{ product.name }}</div>
+                    <div class="shop-product-price">TZS {{ product.hardware_price_per_unit|floatformat:0 }}</div>
+                    <div class="shop-product-meta">{{ product.get_unit_display }} • ETA {{ product.delivery_eta_hours }}hrs</div>
+                    <a href="{% url 'product_detail' product.id %}" class="btn btn-primary" style="width: 100%;">Order</a>
+                </article>
+                {% empty %}
+                <div class="shop-empty">No products listed yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="shop-empty">No hardware stores are available yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

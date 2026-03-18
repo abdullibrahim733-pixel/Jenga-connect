@@ -500,3 +500,239 @@ textarea:focus {
   background: #e3f2fd;
   color: #1565c0;
 }
+
+/* -----------------------------
+   Hardware Shops Directory
+------------------------------ */
+.shop-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, rgba(255, 106, 0, 0.18), rgba(14, 165, 233, 0.12));
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.shop-hero-title {
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 800;
+}
+
+.shop-hero-subtitle {
+  color: var(--text-muted);
+  margin: 0.4rem 0 0;
+}
+
+.shop-directory {
+  display: grid;
+  gap: 2rem;
+}
+
+.shop-card {
+  background: rgba(12, 18, 30, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.shop-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.18), rgba(15, 23, 42, 0.85));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.shop-banner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.shop-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.25);
+  color: #5eead4;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shop-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.shop-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.shop-stat {
+  text-align: center;
+  min-width: 100px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.shop-stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.shop-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.shop-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.shop-product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-sm);
+}
+
+.shop-product-category {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #f8b86b;
+  font-weight: 700;
+}
+
+.shop-product-name {
+  font-weight: 700;
+  min-height: 2.4em;
+}
+
+.shop-product-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.shop-product-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.shop-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+}
+
+/* -----------------------------
+   Live Sales Widgets
+------------------------------ */
+.sales-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.sales-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 1fr) minmax(200px, 2fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.sales-store-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.sales-store-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sales-metrics {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.sales-metrics-block {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-bottom: 1rem;
+}
+
+.sales-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sales-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.sales-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sales-pill {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.75rem;
+  color: var(--text-main);
+}
+
+.sales-pill-muted {
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .shop-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sales-row {
+    grid-template-columns: 1fr;
+  }
+}

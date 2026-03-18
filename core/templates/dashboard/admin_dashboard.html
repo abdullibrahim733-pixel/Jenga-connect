@@ -25,6 +25,42 @@
         </div>
     </div>
 
+    <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+                <h2 style="font-size: 1.2rem; font-weight: 700; margin: 0;">Live Hardware Sales</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.35rem 0 0;">Auto-refreshes every 5 seconds</p>
+            </div>
+            <div id="sales-admin-updated" style="font-size: 0.85rem; color: var(--text-muted);">Updated just now</div>
+        </div>
+        <div class="sales-grid" id="sales-admin-grid">
+            {% for store in sales_snapshot %}
+            <div class="sales-row" data-store-id="{{ store.id }}">
+                <div class="sales-store">
+                    <div class="sales-store-name">{{ store.name }}</div>
+                    <div class="sales-store-meta">{{ store.area }}</div>
+                </div>
+                <div class="sales-metrics">
+                    <div><span class="sales-label">Sales</span> <span class="sales-value" data-metric="total_sales">TZS {{ store.total_sales }}</span></div>
+                    <div><span class="sales-label">Units Sold</span> <span class="sales-value" data-metric="items_sold">{{ store.items_sold }}</span></div>
+                    <div><span class="sales-label">Orders</span> <span class="sales-value" data-metric="order_count">{{ store.order_count }}</span></div>
+                </div>
+                <div class="sales-items">
+                    {% if store.top_items %}
+                    {% for item in store.top_items %}
+                    <span class="sales-pill">{{ item.units }} {{ item.unit }} • {{ item.name }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="sales-pill sales-pill-muted">No paid sales yet</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div style="color: var(--text-muted);">No hardware stores yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+
     <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
         <div style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem;">
             <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Payment Status</h2>
@@ -141,4 +177,67 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const adminSalesUrl = "{% url 'sales_metrics' %}";
+    const adminGrid = document.getElementById("sales-admin-grid");
+    const adminUpdated = document.getElementById("sales-admin-updated");
+
+    function formatCurrency(value) {
+        const amount = Number(value || 0);
+        return `TZS ${amount.toFixed(0)}`;
+    }
+
+    function updateAdminSales(data) {
+        if (!data || !data.stores) {
+            return;
+        }
+        data.stores.forEach(store => {
+            const row = adminGrid.querySelector(`[data-store-id=\"${store.id}\"]`);
+            if (!row) {
+                return;
+            }
+            row.querySelector('[data-metric="total_sales"]').textContent = formatCurrency(store.total_sales);
+            row.querySelector('[data-metric="items_sold"]').textContent = store.items_sold ?? 0;
+            row.querySelector('[data-metric="order_count"]').textContent = store.order_count ?? 0;
+
+            const itemsContainer = row.querySelector(".sales-items");
+            itemsContainer.innerHTML = "";
+            if (store.top_items && store.top_items.length) {
+                store.top_items.forEach(item => {
+                    const pill = document.createElement("span");
+                    pill.className = "sales-pill";
+                    pill.textContent = `${item.units} ${item.unit} • ${item.name}`;
+                    itemsContainer.appendChild(pill);
+                });
+            } else {
+                const pill = document.createElement("span");
+                pill.className = "sales-pill sales-pill-muted";
+                pill.textContent = "No paid sales yet";
+                itemsContainer.appendChild(pill);
+            }
+        });
+        if (adminUpdated) {
+            adminUpdated.textContent = "Updated " + new Date().toLocaleTimeString();
+        }
+    }
+
+    async function refreshAdminSales() {
+        try {
+            const response = await fetch(adminSalesUrl, { headers: { "Accept": "application/json" } });
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            updateAdminSales(data);
+        } catch (err) {
+            console.warn("Sales refresh failed", err);
+        }
+    }
+
+    refreshAdminSales();
+    setInterval(refreshAdminSales, 5000);
+</script>
 {% endblock %}

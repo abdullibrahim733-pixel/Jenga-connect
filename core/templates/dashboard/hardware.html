@@ -109,6 +109,44 @@
 
         <!-- Inventory List -->
         <div style="flex: 1; min-width: 300px;">
+            <div class="glass-panel" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Live Sales</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.35rem 0 0;">Auto-refreshes every 5 seconds</p>
+                    </div>
+                    <div id="sales-hardware-updated" style="font-size: 0.8rem; color: var(--text-muted);">Updated just now</div>
+                </div>
+                <div class="sales-metrics-block">
+                    <div>
+                        <div class="sales-label">Total Sales</div>
+                        <div class="sales-value" data-metric="total_sales">
+                            {% if sales_snapshot %}TZS {{ sales_snapshot.total_sales }}{% else %}TZS 0{% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="sales-label">Units Sold</div>
+                        <div class="sales-value" data-metric="items_sold">
+                            {% if sales_snapshot %}{{ sales_snapshot.items_sold }}{% else %}0{% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="sales-label">Orders</div>
+                        <div class="sales-value" data-metric="order_count">
+                            {% if sales_snapshot %}{{ sales_snapshot.order_count }}{% else %}0{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="sales-items" id="sales-hardware-items">
+                    {% if sales_snapshot and sales_snapshot.top_items %}
+                    {% for item in sales_snapshot.top_items %}
+                    <span class="sales-pill">{{ item.units }} {{ item.unit }} • {{ item.name }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="sales-pill sales-pill-muted">No paid sales yet</span>
+                    {% endif %}
+                </div>
+            </div>
             <div
                 style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); overflow: hidden;">
                 <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: #fdfdfd;">
@@ -163,4 +201,67 @@
 
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const hardwareSalesUrl = "{% url 'sales_metrics' %}";
+    const hardwareUpdated = document.getElementById("sales-hardware-updated");
+    const hardwareItems = document.getElementById("sales-hardware-items");
+    const hardwareMetrics = {
+        totalSales: document.querySelector('[data-metric="total_sales"]'),
+        itemsSold: document.querySelector('[data-metric="items_sold"]'),
+        orderCount: document.querySelector('[data-metric="order_count"]'),
+    };
+
+    function formatCurrency(value) {
+        const amount = Number(value || 0);
+        return `TZS ${amount.toFixed(0)}`;
+    }
+
+    function updateHardwareSales(data) {
+        if (!data || !data.stores || !data.stores.length) {
+            return;
+        }
+        const store = data.stores[0];
+        hardwareMetrics.totalSales.textContent = formatCurrency(store.total_sales);
+        hardwareMetrics.itemsSold.textContent = store.items_sold ?? 0;
+        hardwareMetrics.orderCount.textContent = store.order_count ?? 0;
+
+        hardwareItems.innerHTML = "";
+        if (store.top_items && store.top_items.length) {
+            store.top_items.forEach(item => {
+                const pill = document.createElement("span");
+                pill.className = "sales-pill";
+                pill.textContent = `${item.units} ${item.unit} • ${item.name}`;
+                hardwareItems.appendChild(pill);
+            });
+        } else {
+            const pill = document.createElement("span");
+            pill.className = "sales-pill sales-pill-muted";
+            pill.textContent = "No paid sales yet";
+            hardwareItems.appendChild(pill);
+        }
+
+        if (hardwareUpdated) {
+            hardwareUpdated.textContent = "Updated " + new Date().toLocaleTimeString();
+        }
+    }
+
+    async function refreshHardwareSales() {
+        try {
+            const response = await fetch(hardwareSalesUrl, { headers: { "Accept": "application/json" } });
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            updateHardwareSales(data);
+        } catch (err) {
+            console.warn("Sales refresh failed", err);
+        }
+    }
+
+    refreshHardwareSales();
+    setInterval(refreshHardwareSales, 5000);
+</script>
 {% endblock %}
