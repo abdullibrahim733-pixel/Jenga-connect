@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load media_extras %}
 
 {% block title %}Jenga Connect - {{ product.name }}{% endblock %}
 
@@ -8,7 +9,7 @@
         <!-- Product Image -->
         <div
             style="flex: 1; min-width: 300px; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
-            <img src="{% if product.image %}{{ request.build_absolute_uri(product.image.url) }}{% else %}https://via.placeholder.com/400?text={{ product.category }}{% endif %}"
+            <img src="{% if product.image %}{{ product.image.url|absolute_uri:request }}{% else %}https://via.placeholder.com/400?text={{ product.category }}{% endif %}"
                 alt="{{ product.name }}" style="width: 100%; height: auto; object-fit: contain; max-height: 400px;">
         </div>
 
