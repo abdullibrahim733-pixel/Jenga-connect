@@ -33,7 +33,7 @@
     <div class="product-grid">
         {% for product in products %}
         <div class="product-card">
-            <img src="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/200?text={{ product.get_category_display }}{% endif %}"
+            <img src="{% if product.image %}{{ request.build_absolute_uri(product.image.url) }}{% else %}https://via.placeholder.com/200?text={{ product.get_category_display }}{% endif %}"
                 alt="{{ product.name }}" class="product-image">
             <div class="product-info">
                 <!-- Using TZS for pricing per specs -->

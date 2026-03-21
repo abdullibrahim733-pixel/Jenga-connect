@@ -87,6 +87,14 @@ def _build_sales_snapshot(stores):
 
     return snapshot
 
+
+def _get_notification_preview(profile, limit=5):
+    return (
+        Notification.objects.filter(user=profile)
+        .select_related("order")
+        .order_by("-created_at")[:limit]
+    )
+
 def home(request):
     category = request.GET.get("category")
     if category:
@@ -179,6 +187,13 @@ def checkout(request):
             message=f"You have a new order #{order.short_id} from {profile.full_name}",
             order=order,
         )
+        Notification.objects.create(
+            user=profile,
+            type="ORDER_CREATED",
+            title="Order Placed",
+            message=f"Your order #{order.short_id} has been placed successfully.",
+            order=order,
+        )
 
     return redirect("initiate_payment", order_id=order.id)
 
@@ -265,6 +280,21 @@ def payment_status(request, payment_id):
         order.payment_status = "paid"
         order.status = "confirmed"
         order.save()
+
+        Notification.objects.create(
+            user=order.store.owner,
+            type="PAYMENT_RECEIVED",
+            title="Payment Received",
+            message=f"Payment received for order #{order.short_id}.",
+            order=order,
+        )
+        Notification.objects.create(
+            user=order.fundi,
+            type="ORDER_CONFIRMED",
+            title="Payment Confirmed",
+            message=f"Your payment for order #{order.short_id} is confirmed.",
+            order=order,
+        )
 
         return JsonResponse({"status": "success"})
 
@@ -391,8 +421,15 @@ def dashboard(request):
             .select_related("store")
             .order_by("-created_at")
         )
+        notifications_preview = _get_notification_preview(profile)
         return render(
-            request, "dashboard/fundi.html", {"profile": profile, "orders": orders}
+            request,
+            "dashboard/fundi.html",
+            {
+                "profile": profile,
+                "orders": orders,
+                "notifications_preview": notifications_preview,
+            },
         )
 
     elif profile.role == "hardware":
@@ -407,6 +444,7 @@ def dashboard(request):
             .order_by("-created_at")
         )
         sales_snapshot = _build_sales_snapshot([store])
+        notifications_preview = _get_notification_preview(profile)
         return render(
             request,
             "dashboard/hardware.html",
@@ -416,6 +454,7 @@ def dashboard(request):
                 "products": products,
                 "orders": orders,
                 "sales_snapshot": sales_snapshot[0] if sales_snapshot else None,
+                "notifications_preview": notifications_preview,
             },
         )
     else:
@@ -518,6 +557,33 @@ def manage_order(request, order_id, action):
         logger.info(
             f"Order {order_id} status changed from {old_status} to {new_status} by {request.user.username}"
         )
+        notification_payloads = {
+            "confirmed": (
+                "ORDER_CONFIRMED",
+                "Order Confirmed",
+                f"Your order #{order.short_id} has been confirmed.",
+            ),
+            "delivered": (
+                "ORDER_DELIVERED",
+                "Order Delivered",
+                f"Your order #{order.short_id} has been delivered.",
+            ),
+            "rejected": (
+                "ORDER_REJECTED",
+                "Order Rejected",
+                f"Your order #{order.short_id} was rejected. Please contact the store.",
+            ),
+        }
+        notification = notification_payloads.get(new_status)
+        if notification:
+            notif_type, title, message = notification
+            Notification.objects.create(
+                user=order.fundi,
+                type=notif_type,
+                title=title,
+                message=message,
+                order=order,
+            )
         messages.success(request, f"Order status updated to {new_status}.")
     except Exception as e:
         logger.error(f"Error updating order {order_id}: {str(e)}")
@@ -817,6 +883,7 @@ def admin_dashboard(request):
         "-created_at"
     )[:10]
     sales_snapshot = _build_sales_snapshot(stores)
+    notifications_preview = _get_notification_preview(profile)
 
     context = {
         "profile": profile,
@@ -826,6 +893,7 @@ def admin_dashboard(request):
         "stores": stores,
         "recent_orders": recent_orders,
         "sales_snapshot": sales_snapshot,
+        "notifications_preview": notifications_preview,
     }
     return render(request, "dashboard/admin_dashboard.html", context)
 
@@ -872,3 +940,45 @@ def map_view(request):
             }
         )
     return render(request, "map.html", {"stores": stores_data})
+
+
+@login_required
+def notifications_view(request):
+    profile = request.user.profile
+    notifications = (
+        Notification.objects.filter(user=profile)
+        .select_related("order")
+        .order_by("-created_at")
+    )
+    Notification.objects.filter(user=profile, is_read=False).update(is_read=True)
+    return render(
+        request,
+        "notifications.html",
+        {
+            "profile": profile,
+            "notifications": notifications,
+        },
+    )
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    profile = request.user.profile
+    notification = get_object_or_404(
+        Notification, id=notification_id, user=profile
+    )
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+    return redirect("notifications")
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    profile = request.user.profile
+    Notification.objects.filter(user=profile, is_read=False).update(is_read=True)
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"status": "ok"})
+    return redirect("notifications")

@@ -189,6 +189,103 @@ header {
   color: white;
 }
 
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.notification-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.6rem);
+  width: min(360px, 90vw);
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  display: none;
+  overflow: hidden;
+  z-index: 1200;
+}
+
+[data-theme="light"] .notification-dropdown {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.notification-menu.open .notification-dropdown {
+  display: block;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.notification-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+}
+
+.notification-dropdown-link {
+  font-size: 0.85rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.notification-dropdown-body {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.notification-dropdown-item {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+}
+
+.notification-dropdown-item.unread {
+  background: rgba(255, 106, 0, 0.12);
+}
+
+.notification-dropdown-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.notification-dropdown-message {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.notification-dropdown-time {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.notification-dropdown-empty {
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
 /* Product Cards */
 .product-grid {
   display: grid;

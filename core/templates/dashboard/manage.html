@@ -233,7 +233,7 @@
                             style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 {% if pt.image %}
-                                <img src="{{ pt.image.url }}" alt="{{ pt.name }}"
+                                <img src="{{ request.build_absolute_uri(pt.image.url) }}" alt="{{ pt.name }}"
                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
                                 {% else %}
                                 <div

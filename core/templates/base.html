@@ -49,9 +49,40 @@
             </div>
 
             <div class="user-actions">
-                <button id="theme-toggle" class="btn btn-outline" type="button">Light Mode</button>
                 <a href="{% url 'hardware_shops' %}" class="btn btn-outline">Hardware Shops</a>
                 {% if user.is_authenticated %}
+                <div class="notification-menu" id="notification-menu">
+                    <button
+                        id="notification-toggle"
+                        class="btn btn-outline"
+                        type="button"
+                        data-unread="{{ notification_unread_count|default:0 }}"
+                        aria-expanded="false">
+                        Notifications
+                        {% if notification_unread_count %}
+                        <span class="notification-badge">{{ notification_unread_count }}</span>
+                        {% endif %}
+                    </button>
+                    <div id="notification-dropdown" class="notification-dropdown" aria-hidden="true">
+                        <div class="notification-dropdown-header">
+                            <span>Notifications</span>
+                            <a href="{% url 'notifications' %}" class="notification-dropdown-link">View all</a>
+                        </div>
+                        <div class="notification-dropdown-body">
+                            {% if notifications_preview %}
+                            {% for note in notifications_preview %}
+                            <div class="notification-dropdown-item {% if not note.is_read %}unread{% endif %}">
+                                <div class="notification-dropdown-title">{{ note.title }}</div>
+                                <div class="notification-dropdown-message">{{ note.message }}</div>
+                                <div class="notification-dropdown-time">{{ note.created_at|date:"M d, H:i" }}</div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="notification-dropdown-empty">No notifications yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 <a href="{% url 'dashboard' %}" class="btn btn-outline">Dashboard</a>
                 {% else %}
                 <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
@@ -106,16 +137,96 @@
 
         function syncThemeLabel() {
             const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
-            themeToggle.textContent = currentTheme === "dark" ? "Light Mode" : "Dark Mode";
+            if (themeToggle) {
+                themeToggle.textContent = currentTheme === "dark" ? "Light Mode" : "Dark Mode";
+            }
         }
 
-        themeToggle.addEventListener("click", () => {
-            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
-            const nextTheme = currentTheme === "dark" ? "light" : "dark";
-            document.documentElement.setAttribute("data-theme", nextTheme);
-            localStorage.setItem("theme", nextTheme);
-            syncThemeLabel();
-        });
+        if (themeToggle) {
+            themeToggle.addEventListener("click", () => {
+                const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+                const nextTheme = currentTheme === "dark" ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", nextTheme);
+                localStorage.setItem("theme", nextTheme);
+                syncThemeLabel();
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i += 1) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function markAllNotificationsRead(toggleEl, dropdownEl) {
+            const unreadCount = Number(toggleEl?.dataset?.unread || 0);
+            if (!unreadCount || toggleEl?.dataset?.marked === "1") {
+                return;
+            }
+            toggleEl.dataset.marked = "1";
+            try {
+                const response = await fetch("{% url 'mark_all_notifications_read' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                });
+                if (response.ok) {
+                    const badge = toggleEl.querySelector(".notification-badge");
+                    if (badge) {
+                        badge.remove();
+                    }
+                    toggleEl.dataset.unread = "0";
+                    dropdownEl.querySelectorAll(".notification-dropdown-item.unread").forEach(item => {
+                        item.classList.remove("unread");
+                    });
+                }
+            } catch (err) {
+                console.warn("Failed to mark notifications as read", err);
+            }
+        }
+
+        const notificationMenu = document.getElementById("notification-menu");
+        const notificationToggle = document.getElementById("notification-toggle");
+        const notificationDropdown = document.getElementById("notification-dropdown");
+
+        if (notificationMenu && notificationToggle && notificationDropdown) {
+            notificationToggle.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const isOpen = notificationMenu.classList.toggle("open");
+                notificationToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                notificationDropdown.setAttribute("aria-hidden", isOpen ? "false" : "true");
+                if (isOpen) {
+                    markAllNotificationsRead(notificationToggle, notificationDropdown);
+                }
+            });
+
+            document.addEventListener("click", (event) => {
+                if (!notificationMenu.contains(event.target)) {
+                    notificationMenu.classList.remove("open");
+                    notificationToggle.setAttribute("aria-expanded", "false");
+                    notificationDropdown.setAttribute("aria-hidden", "true");
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    notificationMenu.classList.remove("open");
+                    notificationToggle.setAttribute("aria-expanded", "false");
+                    notificationDropdown.setAttribute("aria-hidden", "true");
+                }
+            });
+        }
 
         syncThemeLabel();
         lucide.createIcons();

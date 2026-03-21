@@ -267,6 +267,7 @@ class Notification(models.Model):
     TYPE_CHOICES = [
         ("ORDER_CREATED", "Order Created"),
         ("ORDER_CONFIRMED", "Order Confirmed"),
+        ("ORDER_REJECTED", "Order Rejected"),
         ("ORDER_SHIPPED", "Order Shipped"),
         ("ORDER_DELIVERED", "Order Delivered"),
         ("PAYMENT_RECEIVED", "Payment Received"),
